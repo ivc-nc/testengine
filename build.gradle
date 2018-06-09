@@ -1,0 +1,177 @@
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath 'com.commercehub:gradle-cucumber-jvm-plugin:0.8'
+        classpath 'gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:1.3'
+        classpath 'net.nemerosa:versioning:2.6.0'
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'com.commercehub.cucumber-jvm' version '0.11'
+    id 'com.energizedwork.webdriver-binaries' version '1.3'
+}
+
+apply plugin: 'idea'
+
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+// Information about the project
+description 'basic webapplication test-package'
+version '0.0.1'
+
+
+
+// WebDrivers
+webdriverBinaries {
+    chromedriver '2.32'
+    geckodriver '0.19.0'
+    iedriverserver '3.8.0'
+}
+
+
+// Cucumber setup and task definitions to execute test-suites
+// https://github.com/commercehub-oss/gradle-cucumber-jvm-plugin#cucumber-task-configuration
+
+addCucumberSuite 'cucumberTest'
+
+cucumber {
+    maxParallelForks = 1
+}
+
+
+/**
+ * This is a cucumber test suite for all steps and features in the src/cucumberTest directory.
+ * Other suites can ce defined by adding tags to features,
+ * and creating another cucumber run-configuration here that only executes tests with specific tag
+ */
+cucumberTest {
+
+    // but standard output does not write to console
+    logging.captureStandardOutput LogLevel.INFO
+
+    String defaultProperties = "src/main/resources/properties/default.properties"
+
+    def propertiesFile = project.hasProperty("propertiesFile") ? "$propertiesFile" : defaultProperties
+    systemProperties.put('propertiesFile', propertiesFile)
+
+    // exclude specific tags from command line run
+    def exclude = project.hasProperty("exclude") ? "$exclude".split(",") : []
+
+    tags = ["~@ignore"]
+    exclude.each{
+        tags.add("~@$it")
+    }
+
+    // include specific tags from command line run
+    def include = project.hasProperty("include") ? "$include".split(",") : []
+    include.each{
+        tags.add("@$it")
+    }
+
+    // Set the parameters for the cucumber test-suite
+    // todo update
+    stepDefinitionRoots = ['classpath:cucumber']
+
+    // Set the feature root folder. Or the folder from the properties passed in
+    //todo update
+    String featureFolder = project.hasProperty("featureFolder") ? "features/$featureFolder" : "features"
+    featureRoots = [featureFolder]
+
+    // set the geb browser environment. This is where the browser behavior is defined
+    def browser = project.hasProperty("browser") ? "$browser" : "firefox"
+    systemProperties.put('geb.env', browser)
+
+}
+
+test {
+}
+
+// Add the path to the webdriver binaries set by the webdriver-binaries-plugin
+configureChromeDriverBinary {
+    addBinaryAware { path ->
+        tasks.cucumberTest.systemProperties.put("webdriver.chrome.driver", path)
+    }
+}
+
+configureGeckoDriverBinary {
+    addBinaryAware { path ->
+        tasks.cucumberTest.systemProperties.put("webdriver.gecko.driver", path)
+    }
+}
+
+tasks.cucumberTest {
+    logging.captureStandardOutput LogLevel.INFO
+    dependsOn configureChromeDriverBinary, configureGeckoDriverBinary
+}
+
+// The dependencies for cucumber has to be specified after the task definition for some reason...
+dependencies {
+
+    compile 'org.codehaus.groovy:groovy-all:2.4.10'
+    compile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    compile 'postgresql:postgresql:9.1-901-1.jdbc4'
+
+
+    // For downloading browser-specific drivers that browsers like Chrome and IE require
+    compile("io.github.bonigarcia:webdrivermanager:1.4.1") {
+        exclude group: 'org.seleniumhq.selenium'
+    }
+
+
+    compile 'com.commercehub:gradle-cucumber-jvm-plugin:0.11'
+    compile 'info.cukes:cucumber-groovy:1.2.5'
+    compile 'info.cukes:cucumber-junit:1.2.5'
+    testCompile 'junit:junit:4.12'
+
+    // geb
+    compile 'org.gebish:geb-core:2.0'
+
+    // Selenium
+    compile "org.seleniumhq.selenium:selenium-api:3.6.0"
+    compile "org.seleniumhq.selenium:selenium-support:3.6.0"
+
+    // WebDrivers for GUI testing // Must match selenium version
+    compile 'org.seleniumhq.selenium:selenium-firefox-driver:3.6.0'
+    compile 'org.seleniumhq.selenium:selenium-chrome-driver:3.6.0'
+
+    // Test data library
+    // todo update
+
+    // SOAP utilities
+    compile "com.github.groovy-wslite:groovy-wslite:1.1.2"
+
+    // Logging
+    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.2'
+    compile group: 'org.slf4j', name:'slf4j-log4j12', version: '1.7.2'
+
+}
+
+task copySrc(type: Copy, dependsOn: clean) {
+    from "${rootDir}"
+    into "${rootDir}/docker_image/build/test_env"
+
+    include 'build.gradle'
+    include 'gradlew'
+    include 'src/**'
+    include 'gradle/**'
+}
+
+clean {
+    delete "${rootDir}/docker_image/build"
+}
+
+jar {
+
+    manifest {
+        //attributes 'Main-Class': 'com.foo.bar.MainClass'
+        attributes 'Main-Class': 'testengine.run.RunMain.groovy'
+    }
+}
