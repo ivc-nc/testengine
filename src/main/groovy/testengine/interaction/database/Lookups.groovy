@@ -1,17 +1,11 @@
 package testengine.interaction.database
 
 import groovy.sql.GroovyRowResult
-import testengine.application.database.DbUtilities
+import testengine.application.database.Utilities
 import testengine.interaction.sharedstate.SharedState
 
 class Lookups {
 
-    /**
-     * TODO TO BE CONSIDERED WHEN OUTMESSAGE MESREFID IS MADE UNIQUE
-     * This code would also work for messages correlated only by correlation id, since they are connected in same way.
-     * @param outMessage
-     * @param countryCode
-     */
     static void findSomethingInDatabase () {
 
         def table = "mytable"
@@ -19,7 +13,7 @@ class Lookups {
 
         String sqlString = "select * from '${table}'"
 
-        List<GroovyRowResult> rows = DbUtilities.pollDatabase (
+        List<GroovyRowResult> rows = Utilities.pollDatabase (
                 SharedState.connection,
                 sqlString
         )

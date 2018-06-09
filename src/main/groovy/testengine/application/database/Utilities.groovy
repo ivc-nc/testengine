@@ -5,7 +5,7 @@ import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class DbUtilities {
+class Utilities {
 
     final static int MAX_ATTEMPTS = 300
     final static int ATTEMPT_SLEEP_TIME = 100
