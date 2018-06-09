@@ -3,7 +3,6 @@ package testengine.application.testdata.library
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
-import java.lang.Exception
 
 @Slf4j
 class ReadFile {

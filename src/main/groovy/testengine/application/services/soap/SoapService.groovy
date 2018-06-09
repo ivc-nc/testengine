@@ -29,7 +29,7 @@ class SoapService {
      * @param xml Should be a LXR receive request in xml format.
      * @return SOAPResponse The response from the application callback endpoint for delivering LXR requests in SOAP format
      */
-    SOAPResponse sendSoap(String xml) {
+    static SOAPResponse sendSoap(String xml) {
 
         // todo generic endpoint
         //String endpoint = "http://${properties.cbcImsHost}:${properties.cbcImsPort}/services/callback"
