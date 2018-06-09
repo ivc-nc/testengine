@@ -1,3 +1,5 @@
 testengine.log
+.idea/
+.gradle/
 build/
 *.iml

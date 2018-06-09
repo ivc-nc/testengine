@@ -6,7 +6,7 @@ import groovy.util.logging.Slf4j
 class PropertiesRead {
 
 
-    static Properties loadFromFile(def name) {
+    static Properties loadFromFile(String name) {
 
         String configurationPath ="src/main/resources/properties/configuration"
 
