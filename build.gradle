@@ -32,7 +32,7 @@ version '0.0.1'
 // WebDrivers
 webdriverBinaries {
     chromedriver '2.32'
-    geckodriver '0.19.0'
+    geckodriver '0.24.0'
     iedriverserver '3.8.0'
 }
 
